@@ -1,0 +1,14 @@
+.root {
+     -fx-background-color: darkslategray;
+ }
+.text-field {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+    -fx-text-fill: ghostwhite;
+    -fx-background-color: darkslategray;
+ }
+.slider .axis {
+     -fx-tick-label-fill: ghostwhite;
+     -fx-tick-mark-fill: ghostwhite;
+     -fx-background-color: darkslategray;
+ }

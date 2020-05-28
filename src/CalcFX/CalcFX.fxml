@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox spacing="2"
+      xmlns="http://javafx.com/javafx/10.0.2-internal"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="CalcFX.Controller"
+      stylesheets="@CalcFX.css">
+   <children>
+      <TextField fx:id="txtExpression" alignment="CENTER" onKeyPressed="#keyPressed" prefHeight="50.0" prefWidth="500.0" promptText="expression" VBox.vgrow="ALWAYS">
+         <font>
+            <Font size="14.0" />
+         </font></TextField>
+      <Slider fx:id="sldPrecision" blockIncrement="1.0" majorTickUnit="1.0" max="4.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+      <TextField fx:id="txtResult" alignment="CENTER" editable="false" focusTraversable="false" prefHeight="50.0" prefWidth="500.0" promptText="result" VBox.vgrow="ALWAYS">
+         <font>
+            <Font size="14.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="NONE" />
+         </cursor></TextField>
+   </children>
+</VBox>
