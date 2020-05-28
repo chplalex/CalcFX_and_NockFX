@@ -65,19 +65,6 @@ public class NockFXApp extends Application {
 
         nodeList.addAll(textOut, textIn, btnSend);
 
-//        ChangeListener<Number> listener = ((observable, oldValue, newValue) -> {
-//            textOut.clear();
-//            textOut.appendText("Stage: W = " + stage.getWidth() + ". H = " + stage.getHeight() + "\n");
-//            textOut.appendText("Root : W = " + root.getWidth() + ". H = " + root.getHeight() + "\n");
-//            textOut.appendText("Scene: W = " + scene.getWidth() + ". H = " + scene.getHeight() + "\n");
-//            textOut.appendText("txtOu: W = " + textOut.getWidth() + ". H = " + textOut.getHeight() + "\n");
-//            textOut.appendText("txtIn: W = " + textIn.getWidth() + ". H = " + textIn.getHeight() + "\n");
-//            textOut.appendText("buttn: W = " + btnSend.getWidth() + ". H = " + btnSend.getHeight() + "\n");
-//        });
-
-//        stage.widthProperty().addListener(listener);
-//        stage.heightProperty().addListener(listener);
-
         stage.show();
     }
 
