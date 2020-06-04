@@ -14,10 +14,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import static NockFX.Const.SERVER_PORT;
+
 public class Controller implements Initializable {
 
     List<ClientEntry> clients;
-    private final int PORT = 8189;
     private ServerSocket serverSocket;
     private boolean serverRunning;
 
@@ -31,7 +32,7 @@ public class Controller implements Initializable {
 
         try {
 
-            serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(SERVER_PORT);
             serverRunning = true;
             putText("Сервер запущен. " + serverSocket.toString());
 
@@ -61,7 +62,7 @@ public class Controller implements Initializable {
     public void close() {
         serverRunning = false;
         for (ClientEntry clientEntry: clients) {
-            clientEntry.closeAndRemove();
+            clientEntry.remove();
         }
         try {
             serverSocket.close();
@@ -72,7 +73,7 @@ public class Controller implements Initializable {
 
     public void putText(String text) {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
-        textArea.appendText(dateFormat.format(new Date()) + " " + text + "\n");
+        textArea.appendText(dateFormat.format(new Date()) + "\n" + text + "\n");
     }
 
     public void broadcastMsg(String msg) {

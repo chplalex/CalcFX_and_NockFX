@@ -1,4 +1,4 @@
-package NockFX.Server;
+package NockFX.Client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -8,9 +8,9 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import static NockFX.Const.TITLE_SERVER;
+import static NockFX.Const.TITLE_CLIENT;
 
-public class Server extends Application {
+public class Client extends Application {
 
     private Controller controller;
 
@@ -21,10 +21,10 @@ public class Server extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("Server.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Client.fxml"));
         Parent root = loader.load();
         controller = loader.getController();
-        stage.setTitle(TITLE_SERVER);
+        stage.setTitle(TITLE_CLIENT);
         stage.setScene(new Scene(root));
         stage.show();
 
@@ -35,4 +35,5 @@ public class Server extends Application {
         super.stop();
         controller.close();
     }
+
 }

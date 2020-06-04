@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import static NockFX.Const.CMD_STOP;
+
 public class ClientEntry {
     Controller controller;
     Socket socket;
@@ -24,12 +26,11 @@ public class ClientEntry {
             new Thread(() -> {
                 try {
                     while (true) {
-                        System.out.println("жду сообщения от клиента: " + socket.toString());
                         String msg = in.readUTF();
-                        System.out.println("получил сообщение: " + msg);
                         controller.putText(msg + " " + socket.toString());
-                        if (msg.equalsIgnoreCase("/end")) {
-                            controller.putText("Отключился клиент " + socket.toString());
+                        if (msg.equalsIgnoreCase(CMD_STOP)) {
+                            controller.putText("Отключаю клиента " + socket.toString());
+                            sendMsg(CMD_STOP);
                             break;
                         }
                         controller.broadcastMsg(msg);
@@ -37,12 +38,12 @@ public class ClientEntry {
                 } catch (IOException e) {
                     controller.putText("Проблема связи с клиентом " + socket.toString() + " " + e.toString());
                 } finally {
-                    closeAndRemove();
+                    remove();
                 }
             }).start();
 
         } catch (IOException e) {
-            controller.putText("ClientEntry 49 " + e.toString());
+            controller.putText("Ошибка подключения клиента " + e.toString());
         }
     }
 
@@ -50,21 +51,13 @@ public class ClientEntry {
         try {
             out.writeUTF(msg);
         } catch (IOException e) {
-            controller.putText("ClientEntry 59 " + e.toString());
+            controller.putText("Ошибка отправки сообщения клиенту " + e.toString());
         }
     }
 
-    public void closeAndRemove() {
-        try {
-            controller.putText("Удаляю клиента " + socket.toString());
-            controller.removeClient(this);
-            out.close();
-            in.close();
-            socket.close();
-        } catch (IOException e) {
-            controller.putText("Проблема с закрытием ресурсов клиента " + socket.toString() + " " + e.toString());
-        }
+    public void remove() {
+        controller.putText("Удаляю клиента " + socket.toString());
+        controller.removeClient(this);
     }
-
 
 }

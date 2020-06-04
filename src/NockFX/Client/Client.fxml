@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="NockFX.Client.Controller">
+   <children>
+      <TextArea fx:id="textArea" editable="false" focusTraversable="false" prefHeight="575.0" prefWidth="300.0" wrapText="true" />
+      <TextField fx:id="textField" onAction="#sendMsg" VBox.vgrow="NEVER" />
+   </children>
+</VBox>
