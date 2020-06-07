@@ -56,66 +56,74 @@ public class Controller implements Initializable {
             socket = new Socket(SERVER_ADDR, SERVER_PORT);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-
             clientConnected = true;
             putText("Подключение к серверу установлено");
-
-            new Thread(() -> {
-
-                // блок аутентификации
-                try {
-                    do {
-                        String msg = in.readUTF();
-
-                        if (msg.equals(CMD_STOP)) {
-                            clientConnected = false;
-                            putText("Соединение с сервером остановлено");
-                            close();
-                            return;
-                        }
-
-                        String[] msgArr = new String[2];
-
-                        msgArr = msg.split(" ", 2);
-
-                        if (msgArr[0].equals(CMD_AUTH_OK)) {
-                            clientNick = msgArr[1];
-                            setFieldsVisibility(true);
-                        }
-
-                        if (msgArr[0].equals(CMD_AUTH_NO)) {
-                            clientNick = null;
-                            setFieldsVisibility(false);
-                        }
-                    } while (clientNick == null);
-
-                } catch (IOException e) {
-                    putText("Ошибка чтения сообщения " + e.toString());
-                    System.out.println("Exeption слушания");
-                }
-
-                putText("Вы вошли в чат под ником " + clientNick);
-
-                // блок работы
-                try {
-                    while (clientConnected) {
-                        String msg = in.readUTF();
-                        if (msg.equals(CMD_STOP)) {
-                            clientConnected = false;
-                            putText("Cоединение с сервером остановлено");
-                            close();
-                            return;
-                        }
-                        putText(msg);
-                    }
-                } catch (IOException e) {
-                    putText("Ошибка чтения сервера " + e.toString());
-                }
-            }).start();
         } catch (IOException e) {
-            putText("Ошибка подключения к серверу " + e.toString());
+            putText("Отсутствует подключение к серверу");
         }
 
+        new Thread(() -> {
+            try {
+                while (true) {
+                    String msg = in.readUTF().trim();
+
+                    // Сервер отклоняет аутентификацию
+                    if (msg.startsWith(CMD_AUTH_NO)) {
+                        putText("Вы не авторизованы в чате");
+                        clientNick = null;
+                        setFieldsVisibility(false);
+                        continue;
+                    }
+
+                    // Сервер подтверждает аутентификацию
+                    if (msg.startsWith(CMD_AUTH_OK)) {
+                        String[] msgArr = msg.split(CMD_REGEX, 2);
+                        if (msgArr.length != 2) {
+                            putText("Некорректная команда от сервера :: " + msg);
+                            clientNick = null;
+                            setFieldsVisibility(false);
+                            continue;
+                        }
+                        clientNick = msgArr[1];
+                        setFieldsVisibility(true);
+                        putText("Вы вошли в чат под ником " + clientNick);
+                    }
+
+                    // Сервер прислал широковещательное сообщение
+                    if (msg.startsWith(CMD_BROADCAST_MSG)) {
+                        String[] msgArr = msg.split(CMD_REGEX, 3);
+                        if (msgArr.length != 3) {
+                            putText("Некорректная команда от сервера :: " + msg);
+                            continue;
+                        }
+                        putText(msgArr[1] + " -> (всем) :: " + msgArr[2]);
+                        continue;
+                    }
+
+                    // Сервер прислал приватное сообщение
+                    if (msg.startsWith(CMD_PRIVATE_MSG)) {
+                        String[] msgArr = msg.split(CMD_REGEX, 3);
+                        if (msgArr.length != 3) {
+                            putText("Некорректная команда от сервера :: " + msg);
+                            continue;
+                        }
+                        putText(msgArr[1] + " -> (только мне) :: " + msgArr[2]);
+                        continue;
+                    }
+
+                    // Сервер даёт команду на закрытие клиента
+                    if (msg.startsWith(CMD_STOP_CLIENT)) {
+                        clientConnected = false;
+                        putText("Соединение с сервером остановлено");
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                putText("Ошибка чтения сообщения " + e.toString());
+            } finally {
+                close();
+            }
+        }).start();
     }
 
     public void setStage(Stage stage) {
@@ -129,7 +137,7 @@ public class Controller implements Initializable {
                 setFieldsVisibility(false);
             }
             if (clientConnected) {
-                out.writeUTF(CMD_STOP);
+                out.writeUTF(CMD_STOP_CLIENT);
                 return;
             }
             if (in != null) {
@@ -152,19 +160,44 @@ public class Controller implements Initializable {
     }
 
     public void sendMsg(ActionEvent actionEvent) {
-        if (clientConnected) {
-            try {
-                String msg = textField.getText();
-                if (!msg.equals(CMD_STOP)) {
-                    out.writeUTF(msg);
-                }
-            } catch (IOException e) {
-                putText("Ошибка отправки сообщения " + e.toString());
-            }
-        } else {
-            putText("Нет подключения к серверу");
+        if (!clientConnected) {
+            putText("Подключение к серверу не установлено");
+            return;
         }
-        textField.setText("");
+
+        String msg = textField.getText().trim();
+
+        if (msg.startsWith(CMD_STOP_CLIENT) ||
+                msg.startsWith(CMD_AUTH) ||
+                msg.startsWith(CMD_BROADCAST_MSG) ||
+                msg.startsWith(CMD_PRIVATE_MSG)) {
+            putText("Служебные символы в начале сообщения недопустимы");
+            return;
+        }
+
+        try {
+            if (msg.startsWith(USER_PRIVATE_MSG)) {
+                String[] msgArr = msg.split(CMD_REGEX, 3);
+                if (msgArr.length != 3) {
+                    putText("Используйте корректный формат команды:\n/w <кому> <сообщение>");
+                } else {
+                    out.writeUTF(CMD_PRIVATE_MSG + " " + msgArr[1] + " " + msgArr[2]);
+                    textField.setText("");
+                }
+                return;
+            }
+
+            if (msg.startsWith(USER_DE_AUTH)) {
+                out.writeUTF(CMD_DE_AUTH);
+                textField.setText("");
+                return;
+            }
+
+            out.writeUTF(CMD_BROADCAST_MSG + " " + msg);
+            textField.setText("");
+        } catch (IOException e) {
+            putText("Ошибка отправки сообщения " + e.toString());
+        }
     }
 
     public void makeAuth(ActionEvent actionEvent) {

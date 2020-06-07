@@ -26,44 +26,72 @@ public class ClientEntry {
 
             new Thread(() -> {
                 try {
-                    // цикл аутентификации
-                    do {
-
-                        String msg = in.readUTF();
-                        String[] msgArr = new String[3];
-                        msgArr = msg.split(" ", 3);
-
-                        if (msgArr[0].equals(CMD_STOP)) {
-                            out.writeUTF(CMD_STOP);
-                            return;
-                        }
-
-                        if (msgArr.length == 3 || msgArr[0].equals(CMD_AUTH)) {
-                            nick = controller.authService.getNickByLogAndPass(msgArr[1], msgArr[2]);
-                        }
-
-                    } while (nick == null);
-
-                    out.writeUTF(CMD_AUTH_OK + " " + nick);
-                    controller.putText(nick + " :: авторизован");
-
-                    // цикл работы
                     while (true) {
-                        String msg = in.readUTF();
-                        controller.putText(nick + " :: " + msg);
-                        if (msg.equals(CMD_STOP)) {
-                            controller.putText(nick + " :: отключаю");
-                            break;
+
+                        String msg = in.readUTF().trim();
+
+                        // Клиент запрашивает авторизацию
+                        if (msg.startsWith(CMD_AUTH)) {
+
+                            String[] msgArr = msg.split(CMD_REGEX, 3);
+
+                            if (msgArr.length != 3) {
+                                controller.putText("Некорректный запрос от клиента :: " + msg);
+                                continue;
+                            }
+
+                            nick = controller.authService.getNickByLogAndPass(msgArr[1], msgArr[2]);
+
+                            if (nick == null) {
+                                out.writeUTF(CMD_AUTH_NO);
+                                continue;
+                            }
+
+                            out.writeUTF(CMD_AUTH_OK + " " + nick);
+                            controller.putText(nick + " :: авторизован");
+                            continue;
                         }
 
-                        String[] msgArr = msg.trim().split("\\s*(\\s)\\s*", 3);
+                        // Клиент запрашивает деавторизацию
+                        if (msg.startsWith(CMD_DE_AUTH)) {
+                            controller.putText(nick + " деавторизован");
+                            nick = null;
+                            out.writeUTF(CMD_AUTH_NO);
+                            continue;
+                        }
 
-                        if (msgArr.length == 3 && msgArr[0].equalsIgnoreCase(CMD_PRIVATE_MSG)) {
+                        // Клиент просит разослать широковещательное сообщение
+                        if (msg.startsWith(CMD_BROADCAST_MSG)) {
+                            String[] msgArr = msg.split(CMD_REGEX, 2);
+                            if (msgArr.length != 2) {
+                                controller.putText("Некорректный запрос от клиента :: " + msg);
+                                continue;
+                            }
+                            controller.broadcastMsg(nick, msgArr[1]);
+                            continue;
+                        }
+
+                        // Клиент просит разослать приватное сообщение
+                        if (msg.startsWith(CMD_PRIVATE_MSG)) {
+                            String[] msgArr = msg.split(CMD_REGEX, 3);
+                            if (msgArr.length != 3) {
+                                controller.putText("Некорректный запрос от клиента :: " + msg);
+                                continue;
+                            }
                             controller.privateMsg(nick, msgArr[1], msgArr[2]);
                             continue;
                         }
 
-                        controller.broadcastMsg(nick + " :: " + msg);
+                        // Клиент запрашивает разрешение на отключение
+                        if (msg.startsWith(CMD_STOP_CLIENT)) {
+                            out.writeUTF(CMD_STOP_CLIENT);
+                            controller.putText(nick + " :: получен запрос на отключение. Клиент отключен");
+                            break;
+                        }
+
+                        // Неопознаный запрос от клиента
+                        controller.putText("Неопознанный запрос от клиента :: " + msg);
+
                     }
                 } catch (IOException e) {
                     controller.putText("Проблема связи с клиентом " + socket.toString() + " " + e.toString());

@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
-import static NockFX.Const.CMD_STOP;
-import static NockFX.Const.SERVER_PORT;
+import static NockFX.Const.*;
 
 public class Controller implements Initializable {
 
@@ -64,9 +63,8 @@ public class Controller implements Initializable {
 
     public void close() {
         serverRunning = false;
-        System.out.println("clients.size = " + clients.size());
         for (ClientEntry clientEntry: clients) {
-            clientEntry.sendMsg(CMD_STOP);
+            clientEntry.sendMsg(CMD_STOP_SERVER);
             clientEntry.closeConnection();
         }
         clients.clear();
@@ -82,16 +80,16 @@ public class Controller implements Initializable {
         textArea.appendText(dateFormat.format(new Date()) + "\n" + text + "\n\n");
     }
 
-    public void broadcastMsg(String msg) {
+    public void broadcastMsg(String sender, String msg) {
         for (ClientEntry clientEntry: clients) {
-            clientEntry.sendMsg(msg);
+            clientEntry.sendMsg(CMD_BROADCAST_MSG + " " + sender + " " + msg);
         }
     }
 
     public void privateMsg(String sender, String recipient, String msg) {
         for (ClientEntry clientEntry: clients) {
             if (recipient.equals(clientEntry.getNick())) {
-                clientEntry.sendMsg(sender + " (только мне) :: " + msg);
+                clientEntry.sendMsg(CMD_PRIVATE_MSG + " " + sender + " " + msg);
             }
         }
     }
