@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import static NockFX.Const.TITLE_CLIENT;
+import static NockFX.Const.*;
 
 public class Client extends Application {
 
@@ -24,7 +24,8 @@ public class Client extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Client.fxml"));
         Parent root = loader.load();
         controller = loader.getController();
-        stage.setTitle(TITLE_CLIENT);
+        controller.setStage(stage);
+        stage.setTitle(TITLE_CLIENT_AUTH_NO);
         stage.setScene(new Scene(root));
         stage.show();
 

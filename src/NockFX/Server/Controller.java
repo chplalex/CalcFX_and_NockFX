@@ -14,11 +14,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import static NockFX.Const.CMD_STOP;
 import static NockFX.Const.SERVER_PORT;
 
 public class Controller implements Initializable {
 
     List<ClientEntry> clients;
+    AuthService authService;
     private ServerSocket serverSocket;
     private boolean serverRunning;
 
@@ -28,6 +30,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         clients = new Vector<>();
+        authService = new TestAuthService();
         serverRunning = false;
 
         try {
@@ -41,6 +44,8 @@ public class Controller implements Initializable {
                     Socket socket = null;
                     try {
                         socket = serverSocket.accept();
+                        putText("Клиент подключён. " + socket.toString());
+                        clients.add(new ClientEntry(this, socket));
                     } catch (IOException e) {
                         if (serverRunning) {
                             putText("Ошибка сервера. " + e.toString());
@@ -49,8 +54,6 @@ public class Controller implements Initializable {
                         }
                         break;
                     }
-                    putText("Клиент подключён. " + socket.toString());
-                    clients.add(new ClientEntry(this, socket));
                 }
             }).start();
 
@@ -61,9 +64,12 @@ public class Controller implements Initializable {
 
     public void close() {
         serverRunning = false;
+        System.out.println("clients.size = " + clients.size());
         for (ClientEntry clientEntry: clients) {
-            clientEntry.remove();
+            clientEntry.sendMsg(CMD_STOP);
+            clientEntry.closeConnection();
         }
+        clients.clear();
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -73,7 +79,7 @@ public class Controller implements Initializable {
 
     public void putText(String text) {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
-        textArea.appendText(dateFormat.format(new Date()) + "\n" + text + "\n");
+        textArea.appendText(dateFormat.format(new Date()) + "\n" + text + "\n\n");
     }
 
     public void broadcastMsg(String msg) {
@@ -82,7 +88,16 @@ public class Controller implements Initializable {
         }
     }
 
+    public void privateMsg(String sender, String recipient, String msg) {
+        for (ClientEntry clientEntry: clients) {
+            if (recipient.equals(clientEntry.getNick())) {
+                clientEntry.sendMsg(sender + " (только мне) :: " + msg);
+            }
+        }
+    }
+
     public void removeClient(ClientEntry clientEntry) {
         clients.remove(clientEntry);
     }
+
 }
