@@ -12,7 +12,7 @@ import static NockFX.Const.*;
 
 public class Client extends Application {
 
-    private Controller controller;
+    private ControllerClient controller;
 
     public static void main(String[] args) {
         launch(args);
@@ -24,7 +24,7 @@ public class Client extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Client.fxml"));
         Parent root = loader.load();
         controller = loader.getController();
-        controller.setStage(stage);
+        controller.setStageClient(stage);
         stage.setTitle(TITLE_CLIENT_AUTH_NO);
         stage.setScene(new Scene(root));
         stage.show();

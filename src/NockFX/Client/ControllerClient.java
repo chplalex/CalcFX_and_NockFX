@@ -3,12 +3,17 @@ package NockFX.Client;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,9 +26,10 @@ import java.util.ResourceBundle;
 
 import static NockFX.Const.*;
 
-public class Controller implements Initializable {
+public class ControllerClient implements Initializable {
 
-    private Stage stage;
+    private Stage stageClient;
+    private Stage stageSigUp;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -37,6 +43,8 @@ public class Controller implements Initializable {
     @FXML
     private PasswordField passField;
     @FXML
+    private HBox boxButtons;
+    @FXML
     private TextArea textArea;
     @FXML
     private TextField textField;
@@ -44,6 +52,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        stageSigUp = createStageSigUp();
         clientConnected = false;
         setFieldsVisibility(false);
         connect();
@@ -60,6 +69,7 @@ public class Controller implements Initializable {
             putText("Подключение к серверу установлено");
         } catch (IOException e) {
             putText("Отсутствует подключение к серверу");
+            return;
         }
 
         new Thread(() -> {
@@ -126,8 +136,8 @@ public class Controller implements Initializable {
         }).start();
     }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    public void setStageClient(Stage stageClient) {
+        this.stageClient = stageClient;
     }
 
     public void close() {
@@ -230,10 +240,13 @@ public class Controller implements Initializable {
         boxLogAndPass.setVisible(!clientAuthenticated);
         boxLogAndPass.setManaged(!clientAuthenticated);
 
+        boxButtons.setVisible(!clientAuthenticated);
+        boxButtons.setManaged(!clientAuthenticated);
+
         textField.setVisible(clientAuthenticated);
         textField.setManaged(clientAuthenticated);
 
-        if (stage == null) {
+        if (stageClient == null) {
             return;
         }
 
@@ -246,8 +259,51 @@ public class Controller implements Initializable {
 
     private void setTitle(String title) {
         Platform.runLater(() -> {
-            stage.setTitle(title);
+            stageClient.setTitle(title);
         });
+    }
+
+    private Stage createStageSigUp() {
+
+        Stage stage = null;
+
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("SingUp.fxml"));
+            Parent root = fxmlLoader.load();
+
+            stage = new Stage();
+            stage.setTitle("NockFX :: New Client");
+            stage.setResizable(false);
+            stage.setScene(new Scene(root));
+            stage.initStyle(StageStyle.UTILITY);
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            ControllerSingUp controllerSingUp = fxmlLoader.getController();
+            controllerSingUp.setControllerClient(this);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return stage;
+    }
+
+    public void showSingUpWindow(ActionEvent actionEvent) {
+        stageSigUp.show();
+    }
+
+
+    public void trySingUp(String nick, String login, String password) {
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+
+        try {
+            out.writeUTF(CMD_SING_UP + " " + nick + "  " + login + " " + password);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

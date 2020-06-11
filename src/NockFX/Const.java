@@ -7,6 +7,7 @@ public class Const {
     // внутрение команды программы
     public final static String CMD_STOP_CLIENT = "/SC";
     public final static String CMD_STOP_SERVER = "/SS";
+    public final static String CMD_SING_UP = "/SU";
     public final static String CMD_AUTH = "/AU";
     public final static String CMD_AUTH_OK = "/AO";
     public final static String CMD_AUTH_NO = "/AN";
