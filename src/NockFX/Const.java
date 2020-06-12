@@ -14,6 +14,7 @@ public class Const {
     public final static String CMD_DE_AUTH = "/DA";
     public final static String CMD_BROADCAST_MSG = "/BM";
     public final static String CMD_PRIVATE_MSG = "/PM";
+    public final static String CMD_CLIENTS_LIST = "/CL";
     public final static String CMD_REGEX = "\\s*(\\s)\\s*";
     // внешние (пользовательские) команды
     public final static String USER_PRIVATE_MSG = "/w"; // отправить приватное сообщение

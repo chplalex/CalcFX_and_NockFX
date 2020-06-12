@@ -63,7 +63,7 @@ public class Controller implements Initializable {
 
     public void close() {
         serverRunning = false;
-        for (ClientEntry clientEntry: clients) {
+        for (ClientEntry clientEntry : clients) {
             clientEntry.sendMsg(CMD_STOP_SERVER);
             clientEntry.closeConnection();
         }
@@ -81,16 +81,35 @@ public class Controller implements Initializable {
     }
 
     public void broadcastMsg(String sender, String msg) {
-        for (ClientEntry clientEntry: clients) {
+        for (ClientEntry clientEntry : clients) {
             clientEntry.sendMsg(CMD_BROADCAST_MSG + " " + sender + " " + msg);
         }
     }
 
     public void privateMsg(String sender, String recipient, String msg) {
-        for (ClientEntry clientEntry: clients) {
+        for (ClientEntry clientEntry : clients) {
             if (recipient.equals(clientEntry.getNick())) {
                 clientEntry.sendMsg(CMD_PRIVATE_MSG + " " + sender + " " + msg);
             }
+        }
+    }
+
+    public void clientsListMsg() {
+        StringBuffer stringBuffer = new StringBuffer(clients.size());
+        stringBuffer.append(CMD_CLIENTS_LIST);
+
+        for (ClientEntry clientEntry: clients) {
+            String nick = clientEntry.getNick();
+            if (nick == null) {
+                continue;
+            }
+            stringBuffer.append(" " + nick);
+        }
+
+        String msg = stringBuffer.toString();
+
+        for (ClientEntry clientEntry: clients) {
+            clientEntry.sendMsg(msg);
         }
     }
 

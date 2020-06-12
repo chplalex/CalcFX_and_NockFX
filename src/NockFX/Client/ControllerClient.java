@@ -1,12 +1,14 @@
 package NockFX.Client;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -22,6 +24,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import static NockFX.Const.*;
@@ -48,6 +51,8 @@ public class ControllerClient implements Initializable {
     @FXML
     private TextArea textArea;
     @FXML
+    private ListView<String> listView;
+    @FXML
     private TextField textField;
 
     @Override
@@ -55,7 +60,7 @@ public class ControllerClient implements Initializable {
 
         stageSigUp = createSigUpWindow();
         clientConnected = false;
-        setComponentsVisibility(false);
+        setControlsVisibility(false);
         connect();
 
     }
@@ -82,7 +87,7 @@ public class ControllerClient implements Initializable {
                     if (msg.startsWith(CMD_AUTH_NO)) {
                         putText("Вы не авторизованы в чате");
                         clientNick = null;
-                        setComponentsVisibility(false);
+                        setControlsVisibility(false);
                         continue;
                     }
 
@@ -92,11 +97,11 @@ public class ControllerClient implements Initializable {
                         if (msgArr.length != 2) {
                             putText("Некорректная команда от сервера :: " + msg);
                             clientNick = null;
-                            setComponentsVisibility(false);
+                            setControlsVisibility(false);
                             continue;
                         }
                         clientNick = msgArr[1];
-                        setComponentsVisibility(true);
+                        setControlsVisibility(true);
                         putText("Вы вошли в чат под ником " + clientNick);
                     }
 
@@ -128,6 +133,20 @@ public class ControllerClient implements Initializable {
                         putText("Соединение с сервером остановлено");
                         break;
                     }
+
+                    // Сервер передает список клиентов
+                    if (msg.startsWith(CMD_CLIENTS_LIST)) {
+                        String[] msgArr = msg.split(CMD_REGEX);
+                        Platform.runLater(()-> {
+                            ObservableList<String> list = listView.getItems();
+                            list.clear();
+                            for (int i = 1; i < msgArr.length; i++) {
+                                list.add(String.format("%d. %s", i, msgArr[i]));
+                            }
+                        });
+                        continue;
+                    }
+
                 }
             } catch (IOException e) {
                 putText("Ошибка чтения сообщения " + e.toString());
@@ -145,7 +164,7 @@ public class ControllerClient implements Initializable {
         try {
             if (clientNick != null) {
                 clientNick = null;
-                setComponentsVisibility(false);
+                setControlsVisibility(false);
             }
             if (clientConnected) {
                 out.writeUTF(CMD_STOP_CLIENT);
@@ -193,19 +212,19 @@ public class ControllerClient implements Initializable {
                     putText("Используйте корректный формат команды:\n/w <кому> <сообщение>");
                 } else {
                     out.writeUTF(CMD_PRIVATE_MSG + " " + msgArr[1] + " " + msgArr[2]);
-                    textField.setText("");
+                    textField.clear();
                 }
                 return;
             }
 
             if (msg.startsWith(USER_DE_AUTH)) {
                 out.writeUTF(CMD_DE_AUTH);
-                textField.setText("");
+                textField.clear();
                 return;
             }
 
             out.writeUTF(CMD_BROADCAST_MSG + " " + msg);
-            textField.setText("");
+            textField.clear();
         } catch (IOException e) {
             putText("Ошибка отправки сообщения " + e.toString());
         }
@@ -236,13 +255,16 @@ public class ControllerClient implements Initializable {
 
     }
 
-    private void setComponentsVisibility(boolean clientAuthenticated) {
+    private void setControlsVisibility(boolean clientAuthenticated) {
 
         boxLogAndPass.setVisible(!clientAuthenticated);
         boxLogAndPass.setManaged(!clientAuthenticated);
 
         boxButtons.setVisible(!clientAuthenticated);
         boxButtons.setManaged(!clientAuthenticated);
+
+        listView.setVisible(clientAuthenticated);
+        listView.setManaged(clientAuthenticated);
 
         textField.setVisible(clientAuthenticated);
         textField.setManaged(clientAuthenticated);

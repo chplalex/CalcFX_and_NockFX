@@ -49,6 +49,7 @@ public class ClientEntry {
 
                             out.writeUTF(CMD_AUTH_OK + " " + nick);
                             controller.putText(nick + " :: авторизован");
+                            controller.clientsListMsg();
                             continue;
                         }
 
@@ -71,6 +72,7 @@ public class ClientEntry {
 
                             out.writeUTF(CMD_AUTH_OK + " " + nick);
                             controller.putText(nick + " :: авторизован");
+                            controller.clientsListMsg();
                             continue;
                         }
 
@@ -79,6 +81,7 @@ public class ClientEntry {
                             controller.putText(nick + " деавторизован");
                             nick = null;
                             out.writeUTF(CMD_AUTH_NO);
+                            controller.clientsListMsg();
                             continue;
                         }
 
@@ -108,6 +111,8 @@ public class ClientEntry {
                         if (msg.startsWith(CMD_STOP_CLIENT)) {
                             out.writeUTF(CMD_STOP_CLIENT);
                             controller.putText(nick + " :: получен запрос на отключение. Клиент отключен");
+                            nick = null;
+                            controller.clientsListMsg();
                             break;
                         }
 

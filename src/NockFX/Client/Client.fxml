@@ -17,7 +17,12 @@
             <Button fx:id="btnSingUp" defaultButton="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#showSingUpWindow" prefHeight="25.0" prefWidth="200.0" text="Регистрация в чате" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
-      <TextArea fx:id="textArea" editable="false" focusTraversable="false" prefHeight="575.0" prefWidth="300.0" wrapText="true" />
+      <HBox maxHeight="1.7976931348623157E308" prefHeight="600.0" prefWidth="400.0" VBox.vgrow="ALWAYS">
+         <children>
+            <TextArea fx:id="textArea" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="525.0" prefWidth="300.0" wrapText="true" HBox.hgrow="ALWAYS" />
+            <ListView fx:id="listView" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" prefHeight="525.0" prefWidth="100.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
       <TextField fx:id="textField" onAction="#sendMsg" VBox.vgrow="NEVER" />
    </children>
 </VBox>
