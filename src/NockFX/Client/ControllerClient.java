@@ -30,6 +30,7 @@ public class ControllerClient implements Initializable {
 
     private Stage stageClient;
     private Stage stageSigUp;
+    private ControllerSingUp controllerSingUp;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -52,9 +53,9 @@ public class ControllerClient implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        stageSigUp = createStageSigUp();
+        stageSigUp = createSigUpWindow();
         clientConnected = false;
-        setFieldsVisibility(false);
+        setComponentsVisibility(false);
         connect();
 
     }
@@ -81,7 +82,7 @@ public class ControllerClient implements Initializable {
                     if (msg.startsWith(CMD_AUTH_NO)) {
                         putText("Вы не авторизованы в чате");
                         clientNick = null;
-                        setFieldsVisibility(false);
+                        setComponentsVisibility(false);
                         continue;
                     }
 
@@ -91,11 +92,11 @@ public class ControllerClient implements Initializable {
                         if (msgArr.length != 2) {
                             putText("Некорректная команда от сервера :: " + msg);
                             clientNick = null;
-                            setFieldsVisibility(false);
+                            setComponentsVisibility(false);
                             continue;
                         }
                         clientNick = msgArr[1];
-                        setFieldsVisibility(true);
+                        setComponentsVisibility(true);
                         putText("Вы вошли в чат под ником " + clientNick);
                     }
 
@@ -144,7 +145,7 @@ public class ControllerClient implements Initializable {
         try {
             if (clientNick != null) {
                 clientNick = null;
-                setFieldsVisibility(false);
+                setComponentsVisibility(false);
             }
             if (clientConnected) {
                 out.writeUTF(CMD_STOP_CLIENT);
@@ -235,7 +236,7 @@ public class ControllerClient implements Initializable {
 
     }
 
-    private void setFieldsVisibility(boolean clientAuthenticated) {
+    private void setComponentsVisibility(boolean clientAuthenticated) {
 
         boxLogAndPass.setVisible(!clientAuthenticated);
         boxLogAndPass.setManaged(!clientAuthenticated);
@@ -252,6 +253,7 @@ public class ControllerClient implements Initializable {
 
         if (clientAuthenticated) {
             setTitle(TITLE_CLIENT_AUTH_OK + clientNick);
+            hideSingUpWindow();
         } else {
             setTitle(TITLE_CLIENT_AUTH_NO);
         }
@@ -263,7 +265,7 @@ public class ControllerClient implements Initializable {
         });
     }
 
-    private Stage createStageSigUp() {
+    private Stage createSigUpWindow() {
 
         Stage stage = null;
 
@@ -278,11 +280,11 @@ public class ControllerClient implements Initializable {
             stage.initStyle(StageStyle.UTILITY);
             stage.initModality(Modality.APPLICATION_MODAL);
 
-            ControllerSingUp controllerSingUp = fxmlLoader.getController();
+            controllerSingUp = fxmlLoader.getController();
             controllerSingUp.setControllerClient(this);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            putText("Ошибка загрузки окна регистрации " + e.toString());
         }
 
         return stage;
@@ -292,16 +294,26 @@ public class ControllerClient implements Initializable {
         stageSigUp.show();
     }
 
+    public void hideSingUpWindow() {
+        Platform.runLater(() -> {
+            controllerSingUp.clearFields();
+            stageSigUp.hide();
+        });
+    }
 
     public void trySingUp(String nick, String login, String password) {
-        if (socket == null || socket.isClosed()) {
+        if (!clientConnected) {
             connect();
+        }
+
+        if (!clientConnected) {
+            return;
         }
 
         try {
             out.writeUTF(CMD_SING_UP + " " + nick + "  " + login + " " + password);
         } catch (IOException e) {
-            e.printStackTrace();
+            putText("Ошибка отправки сообщения " + e.toString());
         }
 
     }

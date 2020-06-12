@@ -37,4 +37,17 @@ public class TestAuthService implements AuthService {
         }
         return null;
     }
+
+    @Override
+    public String getNickBySingUp(String nick, String log, String pass) {
+        String nickInList = getNickByLogAndPass(log, pass);
+        if (nickInList == null) {
+            authList.add(new AuthEntry(nick, log, pass));
+            return nick;
+        }
+        if (nickInList.equalsIgnoreCase(nick)) {
+            return nick;
+        }
+        return null;
+    }
 }

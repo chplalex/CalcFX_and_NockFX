@@ -30,6 +30,28 @@ public class ClientEntry {
 
                         String msg = in.readUTF().trim();
 
+                        // Клиент запрашивает регистрацию
+                        if (msg.startsWith(CMD_SING_UP)) {
+
+                            String[] msgArr = msg.split(CMD_REGEX, 4);
+
+                            if (msgArr.length != 4) {
+                                controller.putText("Некорректный запрос от клиента :: " + msg);
+                                continue;
+                            }
+
+                            nick = controller.authService.getNickBySingUp(msgArr[1], msgArr[2], msgArr[3]);
+
+                            if (nick == null) {
+                                out.writeUTF(CMD_AUTH_NO);
+                                continue;
+                            }
+
+                            out.writeUTF(CMD_AUTH_OK + " " + nick);
+                            controller.putText(nick + " :: авторизован");
+                            continue;
+                        }
+
                         // Клиент запрашивает авторизацию
                         if (msg.startsWith(CMD_AUTH)) {
 
