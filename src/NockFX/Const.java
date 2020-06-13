@@ -24,4 +24,6 @@ public class Const {
     public final static String TITLE_CLIENT_AUTH_OK = "NockFX Client :: ";
     public final static String TITLE_SERVER = "NockFX Server";
 
+    public final static int TIMEOUT_NO_AUTH = 20 * 1000; // таймаут отключения от сервера неавторизованного клиента
+
 }

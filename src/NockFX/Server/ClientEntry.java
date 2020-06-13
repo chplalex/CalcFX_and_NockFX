@@ -24,6 +24,8 @@ public class ClientEntry {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
+            setNick(null);
+
             new Thread(() -> {
                 try {
                     while (true) {
@@ -40,7 +42,7 @@ public class ClientEntry {
                                 continue;
                             }
 
-                            nick = controller.authService.getNickBySingUp(msgArr[1], msgArr[2], msgArr[3]);
+                            setNick(controller.authService.getNickBySingUp(msgArr[1], msgArr[2], msgArr[3]));
 
                             if (nick == null) {
                                 out.writeUTF(CMD_AUTH_NO);
@@ -63,7 +65,7 @@ public class ClientEntry {
                                 continue;
                             }
 
-                            nick = controller.authService.getNickByLogAndPass(msgArr[1], msgArr[2]);
+                            setNick(controller.authService.getNickByLogAndPass(msgArr[1], msgArr[2]));
 
                             if (nick == null) {
                                 out.writeUTF(CMD_AUTH_NO);
@@ -79,7 +81,7 @@ public class ClientEntry {
                         // Клиент запрашивает деавторизацию
                         if (msg.startsWith(CMD_DE_AUTH)) {
                             controller.putText(nick + " деавторизован");
-                            nick = null;
+                            setNick(null);
                             out.writeUTF(CMD_AUTH_NO);
                             controller.clientsListMsg();
                             continue;
@@ -111,7 +113,7 @@ public class ClientEntry {
                         if (msg.startsWith(CMD_STOP_CLIENT)) {
                             out.writeUTF(CMD_STOP_CLIENT);
                             controller.putText(nick + " :: получен запрос на отключение. Клиент отключен");
-                            nick = null;
+                            setNick(null);
                             controller.clientsListMsg();
                             break;
                         }
@@ -135,6 +137,23 @@ public class ClientEntry {
 
     public String getNick() {
         return nick;
+    }
+
+    public void setNick(String newNick) {
+        nick = newNick;
+        if (nick == null) {
+            new Thread(()-> {
+                Thread currentThread = Thread.currentThread();
+                try {
+                    currentThread.sleep(TIMEOUT_NO_AUTH);
+                } catch (InterruptedException e) {
+                    controller.putText("Ошибка прерывания таймаута ожидания авторизации клиента " + e.toString());
+                }
+                if (nick == null && socket != null && !socket.isClosed()) {
+                    sendMsg(CMD_STOP_CLIENT);
+                }
+            }).start();
+        }
     }
 
     public void sendMsg(String msg) {
