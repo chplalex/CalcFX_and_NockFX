@@ -12,7 +12,7 @@ import static NockFX.Const.TITLE_SERVER;
 
 public class Server extends Application {
 
-    private Controller controller;
+    private ControllerServer controller;
 
     public static void main(String[] args) {
         launch(args);

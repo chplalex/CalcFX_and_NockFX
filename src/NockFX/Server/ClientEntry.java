@@ -8,13 +8,13 @@ import java.net.Socket;
 import static NockFX.Const.*;
 
 public class ClientEntry {
-    private Controller controller;
+    private ControllerServer controller;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
     private String nick;
 
-    public ClientEntry(Controller controller, Socket socket) {
+    public ClientEntry(ControllerServer controller, Socket socket) {
 
         this.controller = controller;
         this.socket = socket;

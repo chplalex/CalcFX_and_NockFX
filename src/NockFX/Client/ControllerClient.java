@@ -12,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -239,6 +240,11 @@ public class ControllerClient implements Initializable {
             return;
         }
 
+        // временно для отладки
+        int clientCount = (int) (Math.random() * 5) + 1;
+        logField.setText("log" + clientCount);
+        passField.setText("pass" + clientCount);
+
         String log = logField.getText().trim();
         String pass = passField.getText().trim();
 
@@ -252,7 +258,6 @@ public class ControllerClient implements Initializable {
         } catch (IOException e) {
             putText("Ошибка отправки сообщения " + e.toString());
         }
-
     }
 
     private void setControlsVisibility(boolean clientAuthenticated) {
@@ -337,7 +342,25 @@ public class ControllerClient implements Initializable {
         } catch (IOException e) {
             putText("Ошибка отправки сообщения " + e.toString());
         }
-
     }
 
+    public void onMouseClickedListView(MouseEvent mouseEvent) {
+        String receiver = listView.getSelectionModel().getSelectedItem();
+        if (receiver == null) {
+            return;
+        }
+        receiver = receiver.split(CMD_REGEX, 2)[1];
+
+        String msg = textField.getText().trim();
+        if (msg.startsWith(USER_PRIVATE_MSG)) {
+            String[] msgArr = msg.split(CMD_REGEX, 3);
+            if (msgArr.length == 3) {
+                msg = msgArr[2];
+            } else {
+                msg = "";
+            }
+        }
+
+        textField.setText(USER_PRIVATE_MSG + " " + receiver + " " + msg);
+    }
 }

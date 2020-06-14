@@ -16,7 +16,7 @@ import java.util.Vector;
 
 import static NockFX.Const.*;
 
-public class Controller implements Initializable {
+public class ControllerServer implements Initializable {
 
     List<ClientEntry> clients;
     AuthService authService;
