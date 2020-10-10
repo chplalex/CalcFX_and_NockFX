@@ -1,4 +1,4 @@
-# hwfx
+# CalcFX & NockFX
 CalcFX - калькулятор арифметических выражений
 NockFX - мессенджер
 
